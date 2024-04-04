@@ -75,11 +75,11 @@ pub enum SubInstructionDstSizeType {
 /// 
 /// arg - `([rf][0-9]|i0|MEM_ADDR)` - Argument of instruction, can be a register, or a memory ptr
 /// 
-/// type - `[bwd]` - The type of reg and arg, can be, b (byte, u8), w (word, u16), d (double, u32)
+/// t - `[bwd]` - The type of reg and arg, can be, b (byte, u8), w (word, u16), d (double, u32)
 /// 
-/// ## Load (ld_{reg}_{type} {arg})
+/// ## Load (ld_{reg}{T} {arg})
 /// 
-/// `reg = (*arg) as {type};`
+/// `reg = (*arg) as {T};`
 /// 
 /// `arg` should be a register or pointer containing a memory address
 /// 
@@ -87,9 +87,9 @@ pub enum SubInstructionDstSizeType {
 /// 
 /// It does not zero the bits that were not transfered.
 /// 
-/// ## Store (st_{reg}_{type} {arg})
+/// ## Store (st_{reg}{T} {arg})
 /// 
-/// `*arg = reg as type;`
+/// `*arg = reg as T;`
 /// 
 /// `arg` should be a register or pointer containing a memory address
 /// 
@@ -97,32 +97,96 @@ pub enum SubInstructionDstSizeType {
 /// 
 /// It does not zero the bits that were not transfered.
 /// 
-/// ## Compare (cmp_{reg}_{type} {arg} {arg})
+/// ## Compare (cmp_{reg}{T} {arg} {arg})
 /// 
 // TODO: add proper link to RegisterType
 /// See [RegisterType](#) for more info on it
 /// 
 /// ```rs
-/// cf =      ((reg as type) > (arg as type)) as u8; 
-/// cf = cf | ((reg as type) == (arg as type)) as u8 << 1;
-/// cf = cf | ((reg as type) < (arg as type)) as u8 << 2;
+/// cf =      ((reg as T) > (arg as T)) as u8; 
+/// cf = cf | ((reg as T) == (arg as T)) as u8 << 1;
+/// cf = cf | ((reg as T) < (arg as T)) as u8 << 2;
 /// ```
 /// 
-/// Compares `reg` and `arg`, both as `type` and stores the result in cf
+/// Compares `reg` and `arg`, both as `T` and stores the result in cf
 /// 
-/// ## Add (add {arg})
-/// ## Subtract (sub {arg})
-/// ## Multiply (mul {arg})
-/// ## Divide (div {arg})
-/// ## Modulus (mod {arg})
+/// ## Add (add_{reg}{T} {arg})
+/// 
+/// `*reg += arg as T`
+/// 
+/// ## Subtract (sub_{reg}{T} {arg})
+/// 
+/// `*reg -= arg as T`
+/// 
+/// ## Multiply (mul_{reg}{T} {arg})
+/// 
+/// `*reg *= arg as T`
+/// 
+/// ## Divide (div_{reg}{T} {arg})
+///  
+/// `*reg /= arg as T`
+///
+/// ## Modulus (mod_{reg}{T} {arg})
+///  
+/// `*reg %= arg as T`
+///
 /// ## Unconditional jump (jmp {arg})
+/// 
+/// `ip = addrof(arg)`
+/// 
 /// ## Jump if equals (je {arg})
+/// 
+/// ```rs
+/// if cf & 0b010 == 0b010 {
+///     ip = addrof(arg)
+/// }
+/// ```
+/// 
 /// ## Jump if not equals (jne {arg})
+/// 
+/// ```rs
+/// if cf & 0b010 != 0b010 {
+///     ip = addrof(arg)
+/// }
+/// ```
+/// 
 /// ## Jump if greater than (jg {arg})
+/// 
+/// ```rs
+/// if cf & 0b100 == 0b100 {
+///     ip = addrof(arg)
+/// }
+/// ```
+/// 
 /// ## Jump if greater or equals than(jge {arg})
+/// 
+/// ```rs
+/// if cf & 0b010 == 0b010 || cf & 0b100 == 0b100{
+///     ip = addrof(arg)
+/// }
+/// ```
+/// 
 /// ## Jump if less than  (jl {arg})
+/// 
+/// 
+/// ```rs
+/// if cf & 0b001 == 0b001 {
+///     ip = addrof(arg)
+/// }
+/// ```
+/// 
 /// ## Jump if less or equals than (jle {arg})
+/// 
+/// ```rs
+/// if cf & 0b010 == 0b010 || cf & 0b001 == 0b001{
+///     ip = addrof(arg)
+/// }
+/// ```
+/// 
 /// ## Interrupts (int {arg})
+/// 
+/// See [Interrupts](#) for more info
+/// 
 #[repr(u16)]
 #[allow(non_camel_case_types)]
 pub enum SubInstructionType {
